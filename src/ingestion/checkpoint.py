@@ -33,7 +33,8 @@ def save_checkpoint(
 def mark_checkpoint_completed(
     db: Session,
     endpoint: str,
-    run_id: str
+    run_id: str,
+    watermark: datetime | None = None
 ):
     checkpoint = get_checkpoint(db, endpoint)
 
@@ -44,4 +45,8 @@ def mark_checkpoint_completed(
 
     checkpoint.next_cursor = None
     checkpoint.last_successful_run_id = run_id
+
+    if watermark is not None:
+        checkpoint.last_successful_watermark = watermark
+
     checkpoint.updated_at = datetime.now(timezone.utc)

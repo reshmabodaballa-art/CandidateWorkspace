@@ -50,7 +50,12 @@ def test_pipeline_resumes_after_api_failure(test_db, monkeypatch):
         FakeClient,
     )
 
-    def fake_iter_pages(client, endpoint, start_cursor=None):
+    def fake_iter_pages(
+        client,
+        endpoint,
+        start_cursor=None,
+        updated_since=None,
+    ):
         requested_cursors.append(start_cursor)
 
         if len(requested_cursors) == 1:
@@ -116,9 +121,10 @@ def test_pipeline_resumes_after_api_failure(test_db, monkeypatch):
         assert runs[0].status == "failed"
         assert runs[1].status == "completed"
 
+
 def test_finalization_failure_preserves_previous_checkpoint(
     test_db,
-    monkeypatch
+    monkeypatch,
 ):
     # Create a previously committed checkpoint.
     with test_db() as db:
@@ -141,7 +147,12 @@ def test_finalization_failure_preserves_previous_checkpoint(
     )
 
     # Simulate the final page.
-    def fake_iter_pages(client, endpoint, start_cursor=None):
+    def fake_iter_pages(
+        client,
+        endpoint,
+        start_cursor=None,
+        updated_since=None,
+    ):
         assert start_cursor == "10"
 
         yield {
@@ -166,8 +177,18 @@ def test_finalization_failure_preserves_previous_checkpoint(
     # before the transaction can commit.
     original_mark_completed = pipeline.mark_checkpoint_completed
 
-    def fail_after_checkpoint_update(db, endpoint, run_id):
-        original_mark_completed(db, endpoint, run_id)
+    def fail_after_checkpoint_update(
+        db,
+        endpoint,
+        run_id,
+        watermark=None,
+    ):
+        original_mark_completed(
+            db,
+            endpoint,
+            run_id,
+            watermark,
+        )
         raise RuntimeError("Simulated finalization failure")
 
     monkeypatch.setattr(

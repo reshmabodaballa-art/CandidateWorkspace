@@ -1,4 +1,5 @@
-﻿import os
+﻿
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -31,6 +32,10 @@ class Settings:
     PAGE_SIZE = int(os.getenv("PAGE_SIZE", "100"))
     REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "30"))
     MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
+
+    API_REQUESTS_PER_SECOND = float(
+        os.getenv("API_REQUESTS_PER_SECOND", "5")
+    )
 
     RETRY_BACKOFF_SECONDS = float(
         os.getenv("RETRY_BACKOFF_SECONDS", "2")

@@ -1,7 +1,10 @@
-﻿from datetime import datetime, timedelta, timezone
+﻿
+from datetime import datetime, timedelta, timezone
 
 from fastapi import FastAPI, Header, HTTPException, Query
+
 from src.config import settings
+
 
 app = FastAPI(
     title="YottaFlex Mock API",
@@ -39,11 +42,15 @@ def generate_orders():
 
         records.append({
             "order_id": f"ORD-{i:05d}",
-            "customer_id": customers[(i - 1) % len(customers)]["customer_id"],
+            "customer_id": customers[
+                (i - 1) % len(customers)
+            ]["customer_id"],
             "amount": round(100 + (i * 17.35), 2),
             "status": statuses[(i - 1) % len(statuses)],
             "created_at": created.isoformat(),
-            "updated_at": (created + timedelta(hours=1)).isoformat()
+            "updated_at": (
+                created + timedelta(hours=1)
+            ).isoformat()
         })
 
     return records
@@ -59,14 +66,46 @@ def verify_token(authorization):
         )
 
 
+def filter_updated_records(records, timestamp_field, updated_since):
+    """Return records updated or created at/after the watermark."""
+
+    if updated_since is None:
+        return records
+
+    if updated_since.tzinfo is None:
+        updated_since = updated_since.replace(
+            tzinfo=timezone.utc
+        )
+    else:
+        updated_since = updated_since.astimezone(timezone.utc)
+
+    filtered = []
+
+    for record in records:
+        record_timestamp = datetime.fromisoformat(
+            record[timestamp_field].replace("Z", "+00:00")
+        )
+
+        if record_timestamp >= updated_since:
+            filtered.append(record)
+
+    return filtered
+
+
 def paginate(records, cursor, page_size):
     try:
         offset = int(cursor) if cursor is not None else 0
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid cursor")
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid cursor"
+        )
 
     if offset < 0:
-        raise HTTPException(status_code=400, detail="Invalid cursor")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid cursor"
+        )
 
     page = records[offset:offset + page_size]
     next_offset = offset + len(page)
@@ -74,7 +113,9 @@ def paginate(records, cursor, page_size):
     return {
         "data": page,
         "next_cursor": (
-            str(next_offset) if next_offset < len(records) else None
+            str(next_offset)
+            if next_offset < len(records)
+            else None
         ),
         "total": len(records)
     }
@@ -82,27 +123,47 @@ def paginate(records, cursor, page_size):
 
 @app.get("/health")
 def health():
-    return {"status": "healthy", "service": "YottaFlex Mock API"}
+    return {
+        "status": "healthy",
+        "service": "YottaFlex Mock API"
+    }
 
 
 @app.get("/mock-api/customers")
 def get_customers(
     cursor: str | None = None,
     page_size: int = Query(default=10, ge=1, le=1000),
+    updated_since: datetime | None = None,
     authorization: str | None = Header(default=None)
 ):
     verify_token(authorization)
-    return paginate(generate_customers(), cursor, page_size)
+
+    records = filter_updated_records(
+        generate_customers(),
+        "created_at",
+        updated_since
+    )
+
+    return paginate(records, cursor, page_size)
 
 
 @app.get("/mock-api/orders")
 def get_orders(
     cursor: str | None = None,
     page_size: int = Query(default=10, ge=1, le=1000),
+    updated_since: datetime | None = None,
     authorization: str | None = Header(default=None)
 ):
     verify_token(authorization)
-    return paginate(generate_orders(), cursor, page_size)
+
+    records = filter_updated_records(
+        generate_orders(),
+        "updated_at",
+        updated_since
+    )
+
+    return paginate(records, cursor, page_size)
+
 
 # One-time failure simulation for retry testing
 _simulated_failures = set()
@@ -116,7 +177,10 @@ def test_transient_failure(
     verify_token(authorization)
 
     if failure_type not in {"429", "503"}:
-        raise HTTPException(status_code=400, detail="Use 429 or 503")
+        raise HTTPException(
+            status_code=400,
+            detail="Use 429 or 503"
+        )
 
     if failure_type not in _simulated_failures:
         _simulated_failures.add(failure_type)

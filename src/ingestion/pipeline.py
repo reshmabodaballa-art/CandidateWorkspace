@@ -5,7 +5,11 @@ from uuid import uuid4
 from sqlalchemy import select
 
 from src.database.connection import SessionLocal
-from src.database.models import Customer, IngestionRun, RawAPIResponse
+from src.database.models import (
+    Customer,
+    IngestionRun,
+    RawAPIResponse,
+)
 
 from src.ingestion.api_client import APIClient
 from src.ingestion.paginator import iter_pages
@@ -24,10 +28,35 @@ from src.validation.validator import validate_order
 from src.validation.quarantine import quarantine_record
 
 
+def parse_source_timestamp(value):
+    """Parse an ISO timestamp and normalize it to UTC."""
+
+    if not value:
+        return None
+
+    try:
+        if isinstance(value, str):
+            value = datetime.fromisoformat(
+                value.replace("Z", "+00:00")
+            )
+
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+
+        return value.astimezone(timezone.utc)
+
+    except (TypeError, ValueError):
+        return None
+
+
 def run_ingestion(endpoint: str) -> dict:
 
     if endpoint not in {"customers", "orders"}:
         raise ValueError("Endpoint must be customers or orders")
+
+    timestamp_field = (
+        "created_at" if endpoint == "customers" else "updated_at"
+    )
 
     run_id = str(uuid4())
     client = APIClient()
@@ -47,18 +76,47 @@ def run_ingestion(endpoint: str) -> dict:
         seen_ids = set()
 
         try:
-            # Resume from the last committed page after a failure.
+            # Resume an incomplete run using its saved cursor.
             checkpoint = get_checkpoint(db, endpoint)
-            cursor = checkpoint.next_cursor if checkpoint else None
+
+            cursor = (
+                checkpoint.next_cursor
+                if checkpoint else None
+            )
+
+            # Keep the last successful watermark unchanged
+            # until the complete ingestion run succeeds.
+            watermark = (
+                checkpoint.last_successful_watermark
+                if checkpoint else None
+            )
+
+            max_source_timestamp = watermark
 
             for page in iter_pages(
                 client,
                 endpoint,
-                start_cursor=cursor
+                start_cursor=cursor,
+                updated_since=watermark
             ):
 
                 records = page["records"]
                 input_count += len(records)
+
+                # Track the latest valid source timestamp.
+                for record in records:
+                    source_timestamp = parse_source_timestamp(
+                        record.get(timestamp_field)
+                    )
+
+                    if (
+                        source_timestamp is not None
+                        and (
+                            max_source_timestamp is None
+                            or source_timestamp > max_source_timestamp
+                        )
+                    ):
+                        max_source_timestamp = source_timestamp
 
                 # Preserve the original API response.
                 db.add(
@@ -123,6 +181,7 @@ def run_ingestion(endpoint: str) -> dict:
                         try:
                             with db.begin_nested():
                                 transformed = transform_order(record)
+
                                 publish_order(
                                     db,
                                     run_id,
@@ -142,7 +201,7 @@ def run_ingestion(endpoint: str) -> dict:
                             )
                             rejected_count += 1
 
-                # Save page data and its next cursor.
+                # Save page data and the next cursor together.
                 save_checkpoint(
                     db,
                     endpoint,
@@ -150,11 +209,11 @@ def run_ingestion(endpoint: str) -> dict:
                 )
 
                 # Commit intermediate pages only.
-                # The final page commits with successful run status.
+                # Final page commits with successful run status.
                 if page["next_cursor"] is not None:
                     db.commit()
 
-            # Mark success only after every page has been processed.
+            # Update the watermark only after all pages succeed.
             run.status = "completed"
             run.ended_at = datetime.now(timezone.utc)
             run.input_count = input_count
@@ -164,10 +223,11 @@ def run_ingestion(endpoint: str) -> dict:
             mark_checkpoint_completed(
                 db,
                 endpoint,
-                run_id
+                run_id,
+                max_source_timestamp
             )
 
-            # Commit final page, checkpoint and run status together.
+            # Commit final page, watermark and run status together.
             db.commit()
 
             return {
