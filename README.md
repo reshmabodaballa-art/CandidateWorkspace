@@ -1,4 +1,4 @@
-﻿# YottaFlex AI â€“ Data Engineering Pipeline
+﻿# YottaFlex AI - Data Engineering Pipeline
 
 ## Project Overview
 
@@ -9,30 +9,34 @@ The project demonstrates API authentication, pagination, retry handling, checkpo
 ## Technology Stack
 
 - Python 3.13
-- FastAPI â€“ Mock REST API
-- Requests â€“ API communication
-- SQLAlchemy â€“ Database operations and ORM
-- SQLite â€“ Relational database
-- python-dotenv â€“ Environment configuration
-- Pytest â€“ Automated testing
+- FastAPI - Mock REST API
+- Requests - API communication
+- SQLAlchemy - Database operations and ORM
+- SQLite - Relational database
+- python-dotenv - Environment configuration
+- Pytest - Automated testing
 
 ## Project Structure
 
 ```text
 CandidateWorkspace/
-â”œâ”€â”€ mock_api/
-â”œâ”€â”€ src/
-â”‚   â”œâ”€â”€ database/
-â”‚   â”œâ”€â”€ ingestion/
-â”‚   â”œâ”€â”€ transformation/
-â”‚   â”œâ”€â”€ validation/
-â”‚   â”œâ”€â”€ monitoring/
-â”‚   â””â”€â”€ config.py
-â”œâ”€â”€ tests/
-â”œâ”€â”€ .env.example
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ requirements.txt
-â””â”€â”€ README.md
+├── mock_api/
+├── src/
+│   ├── database/
+│   ├── ingestion/
+│   ├── transformation/
+│   ├── validation/
+│   ├── monitoring/
+│   └── config.py
+├── tests/
+├── scripts/
+├── docs/
+├── data/
+├── reports/
+├── .env.example
+├── .gitignore
+├── requirements.txt
+└── README.md
 ```
 
 ## Features
@@ -48,7 +52,7 @@ CandidateWorkspace/
 9. Safe publishing with duplicate and update handling.
 10. Order history tracking.
 11. Ingestion run monitoring and record counts.
-12. Automated validation tests.
+12. Automated testing.
 
 ## Setup Instructions
 
@@ -76,8 +80,6 @@ pip install -r requirements.txt
 
 ### 4. Configure Environment Variables
 
-Create your local `.env` file from the example:
-
 ```powershell
 Copy-Item .env.example .env
 ```
@@ -98,7 +100,7 @@ Keep this terminal running.
 
 ### 2. Initialize the Database
 
-Open a second terminal and activate the virtual environment:
+Open a second terminal:
 
 ```powershell
 .\venv\Scripts\Activate.ps1
@@ -148,7 +150,9 @@ Invalid records are stored in the rejected-records table with their rejection re
 
 ## Test Results
 
-The six validation-specific tests passed. The full test suite currently has 21 passing tests:
+The full automated test suite currently passes **21 tests**.
+
+Validation test cases include:
 
 - Valid order.
 - Unknown customer.
@@ -167,12 +171,6 @@ The six validation-specific tests passed. The full test suite currently has 21 p
 | Rejected records | 0 |
 | Validation tests passed | 6/6 |
 
-## Author
-
-**Reshma Bodaballa**
-
-B.Tech - Computer Science and Engineering
-
 ## Additional Documentation
 
 - `docs/data_dictionary.md` - Database schemas, relationships, and business rules.
@@ -181,24 +179,38 @@ B.Tech - Computer Science and Engineering
 
 ## Scalable Dataset Generation
 
-Run:
-`python scripts/generate_dataset.py --customers 1000 --orders 100000 --seed 42`
+Generate a reproducible dataset:
+
+```powershell
+python scripts/generate_dataset.py --customers 1000 --orders 100000 --seed 42
+```
+
+The generator includes labelled edge cases such as duplicate orders, missing customer references, invalid statuses, missing amounts, and late/out-of-order records.
 
 ## Data Reconciliation
 
 Run:
-`python scripts/reconcile_dataset.py`
+
+```powershell
+python scripts/reconcile_dataset.py
+```
 
 Report: `reports/reconciliation_report.txt`
 
 ## Lookup Performance Benchmark
 
 Run:
-`python scripts/benchmark_lookup.py`
+
+```powershell
+python scripts/benchmark_lookup.py
+```
 
 Report: `reports/performance_report.txt`
 
 Note: This is a lookup microbenchmark, not a full pipeline benchmark.
 
+## Author
 
+**Reshma Bodaballa**
 
+B.Tech - Computer Science and Engineering
