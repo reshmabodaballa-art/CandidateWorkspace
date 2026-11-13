@@ -1,0 +1,7 @@
+Customer Lookup Performance Benchmark
+Customers: 1000
+Lookup operations: 10000
+Linear search time: 0.206006 seconds
+Dictionary lookup time: 0.000378 seconds
+Measured speedup: 545.42x
+Result verification: PASSED

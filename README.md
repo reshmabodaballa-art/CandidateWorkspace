@@ -1,4 +1,4 @@
-# YottaFlex AI – Data Engineering Pipeline
+﻿# YottaFlex AI â€“ Data Engineering Pipeline
 
 ## Project Overview
 
@@ -9,30 +9,30 @@ The project demonstrates API authentication, pagination, retry handling, checkpo
 ## Technology Stack
 
 - Python 3.13
-- FastAPI – Mock REST API
-- Requests – API communication
-- SQLAlchemy – Database operations and ORM
-- SQLite – Relational database
-- python-dotenv – Environment configuration
-- Pytest – Automated testing
+- FastAPI â€“ Mock REST API
+- Requests â€“ API communication
+- SQLAlchemy â€“ Database operations and ORM
+- SQLite â€“ Relational database
+- python-dotenv â€“ Environment configuration
+- Pytest â€“ Automated testing
 
 ## Project Structure
 
 ```text
 CandidateWorkspace/
-├── mock_api/
-├── src/
-│   ├── database/
-│   ├── ingestion/
-│   ├── transformation/
-│   ├── validation/
-│   ├── monitoring/
-│   └── config.py
-├── tests/
-├── .env.example
-├── .gitignore
-├── requirements.txt
-└── README.md
+â”œâ”€â”€ mock_api/
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ database/
+â”‚   â”œâ”€â”€ ingestion/
+â”‚   â”œâ”€â”€ transformation/
+â”‚   â”œâ”€â”€ validation/
+â”‚   â”œâ”€â”€ monitoring/
+â”‚   â””â”€â”€ config.py
+â”œâ”€â”€ tests/
+â”œâ”€â”€ .env.example
+â”œâ”€â”€ .gitignore
+â”œâ”€â”€ requirements.txt
+â””â”€â”€ README.md
 ```
 
 ## Features
@@ -148,7 +148,7 @@ Invalid records are stored in the rejected-records table with their rejection re
 
 ## Test Results
 
-Six automated validation tests passed:
+The six validation-specific tests passed. The full test suite currently has 21 passing tests:
 
 - Valid order.
 - Unknown customer.
@@ -171,4 +171,34 @@ Six automated validation tests passed:
 
 **Reshma Bodaballa**
 
-B.Tech – Computer Science and Engineering
+B.Tech - Computer Science and Engineering
+
+## Additional Documentation
+
+- `docs/data_dictionary.md` - Database schemas, relationships, and business rules.
+- `docs/architecture.md` - Pipeline architecture diagram.
+- `docs/design_decisions.md` - Technical decisions and trade-offs.
+
+## Scalable Dataset Generation
+
+Run:
+`python scripts/generate_dataset.py --customers 1000 --orders 100000 --seed 42`
+
+## Data Reconciliation
+
+Run:
+`python scripts/reconcile_dataset.py`
+
+Report: `reports/reconciliation_report.txt`
+
+## Lookup Performance Benchmark
+
+Run:
+`python scripts/benchmark_lookup.py`
+
+Report: `reports/performance_report.txt`
+
+Note: This is a lookup microbenchmark, not a full pipeline benchmark.
+
+
+

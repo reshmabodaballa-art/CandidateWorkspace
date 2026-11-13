@@ -1,0 +1,8 @@
+Customer rows: 1000
+Order rows: 100001
+Unique customers: 1000
+Duplicate customers: 0
+Duplicate order rows: 1
+Missing customer references: 1
+Invalid or missing amounts: 2
+Invalid order statuses: 1

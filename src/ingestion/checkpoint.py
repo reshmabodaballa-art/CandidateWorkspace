@@ -1,4 +1,5 @@
-﻿from datetime import datetime, timezone
+﻿
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -16,17 +17,31 @@ def get_checkpoint(db: Session, endpoint: str):
 def save_checkpoint(
     db: Session,
     endpoint: str,
-    next_cursor: str | None,
+    next_cursor: str | None
+):
+    checkpoint = get_checkpoint(db, endpoint)
+
+    if checkpoint is None:
+        checkpoint = Checkpoint(endpoint=endpoint)
+        db.add(checkpoint)
+        db.flush()
+
+    checkpoint.next_cursor = next_cursor
+    checkpoint.updated_at = datetime.now(timezone.utc)
+
+
+def mark_checkpoint_completed(
+    db: Session,
+    endpoint: str,
     run_id: str
 ):
-    checkpoint = Checkpoint(
-        endpoint=endpoint,
-        next_cursor=next_cursor,
-        last_successful_run_id=run_id,
-        updated_at=datetime.now(timezone.utc)
-    )
+    checkpoint = get_checkpoint(db, endpoint)
 
-    db.merge(checkpoint)
+    if checkpoint is None:
+        checkpoint = Checkpoint(endpoint=endpoint)
+        db.add(checkpoint)
+        db.flush()
 
-    # Deliberately do not commit here.
-    # The caller must commit target data and checkpoint together.
+    checkpoint.next_cursor = None
+    checkpoint.last_successful_run_id = run_id
+    checkpoint.updated_at = datetime.now(timezone.utc)
