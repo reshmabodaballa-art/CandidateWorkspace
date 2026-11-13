@@ -1,4 +1,4 @@
-# YottaFlex AI - Data Engineering Pipeline
+# YottaFlex AI – Data Engineering Pipeline
 
 ## Project Overview
 
@@ -9,35 +9,30 @@ The project demonstrates API authentication, pagination, retry handling, checkpo
 ## Technology Stack
 
 - Python 3.13
-- FastAPI - Mock REST API
-- Requests - API communication
-- SQLAlchemy - Database operations and ORM
-- SQLite - Relational database
-- python-dotenv - Environment configuration
-- Pytest - Automated testing
+- FastAPI – Mock REST API
+- Requests – API communication
+- SQLAlchemy – Database operations and ORM
+- SQLite – Relational database
+- python-dotenv – Environment configuration
+- Pytest – Automated testing
 
 ## Project Structure
 
 ```text
 CandidateWorkspace/
-|-- mock_api/
-|-- src/
-|   |-- database/
-|   |-- ingestion/
-|   |-- transformation/
-|   |-- validation/
-|   |-- monitoring/
-|   |-- config.py
-|-- tests/
-|-- data/
-|-- docs/
-|-- reports/
-|-- logs/
-|-- frontend/
-|-- .env.example
-|-- .gitignore
-|-- requirements.txt
-|-- README.md
+├── mock_api/
+├── src/
+│   ├── database/
+│   ├── ingestion/
+│   ├── transformation/
+│   ├── validation/
+│   ├── monitoring/
+│   └── config.py
+├── tests/
+├── .env.example
+├── .gitignore
+├── requirements.txt
+└── README.md
 ```
 
 ## Features
@@ -57,14 +52,14 @@ CandidateWorkspace/
 
 ## Setup Instructions
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
+git clone https://github.com/reshmabodaballa-art/CandidateWorkspace.git
 cd CandidateWorkspace
 ```
 
-### 2. Create and activate a virtual environment
+### 2. Create and Activate a Virtual Environment
 
 Windows PowerShell:
 
@@ -73,13 +68,13 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-### 3. Install dependencies
+### 3. Install Dependencies
 
 ```powershell
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment variables
+### 4. Configure Environment Variables
 
 Create your local `.env` file from the example:
 
@@ -91,7 +86,7 @@ Update `.env` if required.
 
 ## Running the Project
 
-### 1. Start the mock API
+### 1. Start the Mock API
 
 Open the first terminal:
 
@@ -101,7 +96,7 @@ python -m uvicorn mock_api.app:app --host 127.0.0.1 --port 8000
 
 Keep this terminal running.
 
-### 2. Initialize the database
+### 2. Initialize the Database
 
 Open a second terminal and activate the virtual environment:
 
@@ -110,19 +105,19 @@ Open a second terminal and activate the virtual environment:
 python -m src.database.init_db
 ```
 
-### 3. Ingest customers
+### 3. Ingest Customers
 
 ```powershell
 python -c "from src.ingestion.pipeline import run_ingestion; print(run_ingestion('customers'))"
 ```
 
-### 4. Ingest orders
+### 4. Ingest Orders
 
 ```powershell
 python -c "from src.ingestion.pipeline import run_ingestion; print(run_ingestion('orders'))"
 ```
 
-### 5. Run automated tests
+### 5. Run Automated Tests
 
 ```powershell
 python -m pytest -v
@@ -176,4 +171,4 @@ Six automated validation tests passed:
 
 **Reshma Bodaballa**
 
-B.Tech - Computer Science and Engineering
+B.Tech – Computer Science and Engineering
